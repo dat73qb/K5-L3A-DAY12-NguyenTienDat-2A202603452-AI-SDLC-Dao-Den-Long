@@ -53,20 +53,21 @@ function scenario(value, night) {
     motes: list => Array.isArray(list) && list.every(pos), shades: Array.isArray, drifters: Array.isArray,
     lanterns: Array.isArray, charms: Array.isArray, time_left_s: nonnegative
   }, 'scenario');
+  const ids = maps[night].lanterns.map((_, index) => 'L' + (index + 1));
   if (value.player) requireFields(value.player, {
-    pos, carried: bounded(tuning.carry_capacity), flames: count,
+    pos, carried: bounded(tuning.capacity_max), flames: count, successful_lights: count,
     invuln_ticks: count, dash_cd_ticks: count, pulse_cd_ticks: count, charm_ticks: count
   }, 'player');
   uniqueEntities(value.shades, 'shade', {
-    pos, state: value => ['spawning', 'wander', 'chase', 'recoil', 'stunned'].includes(value), state_ticks_left: count
+    pos, state: value => ['spawning', 'wander', 'chase', 'recoil', 'stunned', 'drain'].includes(value), state_ticks_left: count,
+    target_lantern_id: value => ids.includes(value)
   }, shade => pos(shade.pos));
   uniqueEntities(value.drifters, 'drifter', {
     pos, state: value => ['idle', 'chase', 'flee', 'removed'].includes(value),
     stolen: bounded(3), state_ticks_left: count
   }, drifter => pos(drifter.pos));
-  const ids = maps[night].lanterns.map((_, index) => 'L' + (index + 1));
   uniqueEntities(value.lanterns, 'lantern', {
-    pos, id: value => ids.includes(value), lit: bool, deposited: bounded(tuning.lantern_cost)
+    pos, id: value => ids.includes(value), lit: bool, ever_lit: bool, fuel: value => nonnegative(value) && value <= tuning.fuel_max, deposited: bounded(tuning.lantern_cost)
   }, lantern => Boolean(lantern.id));
   uniqueEntities(value.charms, 'charm', { pos, available: bool, respawn_ticks: count }, () => true);
 }

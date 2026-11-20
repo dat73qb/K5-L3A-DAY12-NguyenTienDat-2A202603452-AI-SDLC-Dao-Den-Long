@@ -20,7 +20,7 @@
     <p id="wind" class="panel" hidden></p>
     <div class="bottom">
       <div id="hint"></div>
-      <div id="slots" class="panel" aria-label="Đom đóm"></div>
+      <div id="slots" class="panel" aria-label="Đom đóm"><b id="carry"></b><div id="slot-cells"></div></div>
       <div id="cooldowns" class="panel"></div>
     </div>
   </section>
@@ -33,9 +33,10 @@
       <input id="volume" type="range" min="0" max="100">
       <label for="sensitivity">Độ nhạy chuột <output id="sensitivity-value"></output></label>
       <input id="sensitivity" type="range" min="10" max="100">
+      <label class="palette-option"><input id="clear-palette" type="checkbox"> Bảng màu dễ phân biệt</label>
     </div>
     <div id="actions"></div>
-    <p class="controls">WASD đi · Space nhảy · Shift lướt · E nạp đèn · Q tỏa sáng</p>
+    <p class="controls">WASD đi · Space nhảy · Shift lướt · E nạp đèn · Q tỏa sáng · Esc/P tạm dừng · Kéo chuột để xoay</p>
   </dialog>
   <script type="module" src="/src/browser.mjs"></script>
 </body>

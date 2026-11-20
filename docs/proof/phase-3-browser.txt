@@ -1,0 +1,18 @@
+Phase 3 browser verification
+
+The browser proof images are:
+- gameplay_phase3_n1_win.png — delayed dawn victory.
+- gameplay_phase3_run_out_of_time.png — dawn result flow.
+- gameplay_phase3_out_of_fuel.png — low-fuel/extinction state.
+
+Verified UI requirements:
+- Fuel gauge appears above lit lanterns.
+- Low-fuel lanterns blink.
+- HUD shows fuel interaction and the current capacity.
+- A moves right and D moves left.
+- Mouse camera uses inverse horizontal rotation with pointer lock.
+- Clear-palette setting persists through reload.
+
+FPS note:
+- The automated browser verifier is present at scripts/verify-browser.mjs.
+- A valid FPS number must be recorded only after running that verifier successfully at 1280x720; the current script still contains legacy mojibake selectors and needs a UTF-8 cleanup before it can serve as final FPS evidence.

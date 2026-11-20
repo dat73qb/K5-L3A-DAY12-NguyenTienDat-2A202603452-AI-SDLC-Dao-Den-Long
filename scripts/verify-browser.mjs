@@ -46,8 +46,8 @@ try {
       const callFrameId = message.params.callFrames[0].callFrameId;
       if (!fixture) { send('Debugger.resume').catch(error => errors.push(error.message)); return; }
       const expression = fixture === 'win' ?
-        'Object.assign(game.player, {carried: 10}); game.lanterns.slice(1).forEach(lamp => lamp.lit = true); game.lanterns[0].pos = [0,0,0];'
-        : 'game.duration = 2;';
+        'game.duration = 2; game.player.carried = 10; game.lanterns.slice(1).forEach(lamp => Object.assign(lamp, {lit: true, ever_lit: true, fuelTicks: 6000})); game.lanterns[0].pos = [0,0,0];'
+        : 'game.duration = 2; Object.assign(game.lanterns[0], {pos: [0,0,4], lit: true, ever_lit: true, fuelTicks: 1200}); game.lanterns[1].pos = [2,0,5];';
       send('Debugger.evaluateOnCallFrame', { callFrameId, expression }).then(result => {
         if (result.exceptionDetails) errors.push(result.exceptionDetails.text);
         return send('Debugger.resume');
@@ -94,10 +94,16 @@ try {
     input.value = value;
     input.dispatchEvent(new Event('input'));
   }`);
+  await evaluate(`{
+    const palette = document.getElementById('clear-palette');
+    palette.checked = true;
+    palette.dispatchEvent(new Event('change'));
+  }`);
   await send('Page.reload');
   await waitTitle('Đảo Đèn Lồng');
   await click('Cài đặt');
   assert.deepEqual(await evaluate("['volume','sensitivity'].map(id => document.getElementById(id).value)"), ['0', '72']);
+  assert.equal(await evaluate("document.getElementById('clear-palette').checked && document.body.classList.contains('clear-palette')"), true);
   await click('Quay lại');
   await evaluate(`{
     const start = OscillatorNode.prototype.start;
@@ -134,7 +140,7 @@ try {
     assert.ok(fps >= 30, 'Expected at least 30 FPS');
   }
   await verifyFps('Đảo Bến');
-  await screenshot('phase-2-game.png');
+  await screenshot('phase-3-game.png');
   assert.ok(await evaluate("playedFrequencies.includes(196)"));
   await key('ShiftLeft', 'Shift', 16);
   await until(() => evaluate("/Lướt\\s+[0-9]/.test(document.querySelector('#cooldowns').textContent)"));
@@ -164,6 +170,9 @@ try {
   await click('Chơi lại Đêm');
   await click('Vào đảo');
   await until(() => evaluate("document.querySelector('#clock').classList.contains('danger')"));
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('#clock')).color"), 'rgb(255, 255, 255)');
+  assert.match(await evaluate("document.querySelector('#clock').textContent"), /^⚠/);
+  await screenshot('phase-3-low-fuel.png');
   await waitTitle('Đêm kết thúc');
   assert.ok(await evaluate("playedFrequencies.includes(550) && playedFrequencies.includes(370)"));
   console.log('HUD dash cooldown, warning clock, background, dash, countdown and loss audio tones passed.');
@@ -174,6 +183,8 @@ try {
     await click('Vào đảo');
     await waitPlaying();
     await key('KeyE', 'e', 69);
+    await until(() => evaluate("document.querySelector('#carry').textContent === '0/12'"));
+    assert.equal(await evaluate("document.querySelector('#screen').open"), false);
     await waitTitle(name === 'Đảo Chuông' ? 'Bình Minh' : 'Đảo đã bừng sáng');
     if (name === 'Đảo Chuông') continue;
     fixture = null;
@@ -188,13 +199,13 @@ try {
     await click('Chơi lại Đêm');
   }
   const summary = await evaluate("document.querySelector('#screen-message').textContent");
-  assert.equal(summary, 'Ba hòn đảo đã sáng. Tổng điểm: 3024.');
-  await screenshot('phase-2-dawn.png');
+  assert.equal(summary, 'Ba hòn đảo đã sáng. Tổng điểm: 3564.');
+  await screenshot('phase-3-dawn.png');
   await send('Debugger.removeBreakpoint', { breakpointId: breakpoint });
   await click('Về menu');
   await waitTitle('Đảo Đèn Lồng');
   assert.deepEqual(errors, []);
-  console.log('Fixture replay, three-night progression via E, total score, dawn and return to menu passed.');
+  console.log('Fixture replay, three-night progression via E, capacity increase, delayed dawn victory, total score, color palette persistence and return to menu passed.');
 } finally {
   ws?.close();
   browser.kill();

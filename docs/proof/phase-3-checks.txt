@@ -1,0 +1,21 @@
+Phase 3 verification — Contract v1.2
+
+Date: 2026-11-21
+
+Automated checks:
+- npm test: 22/22 passed
+- npm run build: passed
+- node --check src/game.mjs: passed
+- node --check src/browser.mjs: passed
+
+Covered scenarios:
+- Fuel defaults to 100 and decays at 60 Hz.
+- Pause freezes fuel decay.
+- Refuel caps at 100 and consumes the ceiling-based mote amount.
+- Lantern extinction emits lantern_out.
+- Relight costs 5 motes and increases capacity up to 20.
+- Shades select weak lanterns and enter drain.
+- Multiple drainers accumulate correctly.
+- Pulse interrupts drain and awards the drain-stun bonus.
+- Dawn checks 3/5, 4/6 and 5/7 active lantern thresholds.
+- Zero flames takes priority at dawn.

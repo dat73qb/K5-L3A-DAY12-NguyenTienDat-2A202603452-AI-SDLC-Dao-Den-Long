@@ -1,6 +1,6 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { createGame, hz, step, targetLantern, timeLeft, tuning } from './game.mjs';
+import { capacityFor, createGame, hz, isSafeLantern, lanternCost, requiredLights, step, targetLantern, timeLeft, tuning } from './game.mjs';
 import { maps, ramps } from './maps.mjs';
 import { gameAudio } from './audio.mjs';
 
@@ -69,10 +69,11 @@ leafBatch.frustumCulled = false;
 scene.add(leafBatch);
 const leafTransform = new THREE.Object3D();
 
-let settings = { volume: 45, sensitivity: 45 };
+let settings = { volume: 45, sensitivity: 45, clearPalette: false };
 try {
   const stored = JSON.parse(localStorage.getItem('lantern-settings') ?? '{}');
-  for (const key of Object.keys(settings)) if (Number.isFinite(stored[key])) settings[key] = stored[key];
+  for (const key of ['volume', 'sensitivity']) if (Number.isFinite(stored[key])) settings[key] = stored[key];
+  settings.clearPalette = stored.clearPalette === true;
 } catch { /* Storage may be disabled. */ }
 const saveSettings = () => {
   try { localStorage.setItem('lantern-settings', JSON.stringify(settings)); } catch { /* Optional persistence. */ }
@@ -100,7 +101,7 @@ const drifters = new Map();
 const charms = new Map();
 const seedArg = Number(new URLSearchParams(location.search).get('seed') ?? 12);
 const seed = Number.isSafeInteger(seedArg) ? seedArg : 12;
-const slots = Array.from({ length: 10 }, () => $('slots').appendChild(document.createElement('i')));
+const slots = Array.from({ length: tuning.capacity_max }, () => $('slot-cells').appendChild(document.createElement('i')));
 const displayTime = seconds => {
   const value = Math.max(0, Math.ceil(seconds));
   return String(Math.floor(value / 60)).padStart(2, '0') + ':' + String(value % 60).padStart(2, '0');
@@ -208,14 +209,38 @@ function setupNight(night) {
     group.position.set(...lamp.pos);
     world.add(group);
     cylinder(group, 0, 0, 2.35, 0.19, 2.35, color.wood, 8);
-    const body = cylinder(group, 0, 0, 3.3, 0.62, 1, color.off, 8);
-    const core = mesh(group, new THREE.CylinderGeometry(0.65, 0.68, 0.22, 8), color.core, 0, 2.79, 0, true);
-    mesh(group, new THREE.ConeGeometry(0.9, 0.6, 8), color.wood, 0, 3.6, 0);
+    const housing = new THREE.Group();
+    housing.position.y = 2.35;
+    group.add(housing);
+    const body = cylinder(housing, 0, 0, 0.95, 0.62, 1, color.off, 8);
+    const core = mesh(housing, new THREE.CylinderGeometry(0.65, 0.68, 0.22, 8), color.core, 0, 0.44, 0, true);
+    mesh(housing, new THREE.ConeGeometry(0.9, 0.6, 8), color.wood, 0, 1.25, 0);
+    const tears = new THREE.Group();
+    housing.add(tears);
+    const tearShape = new THREE.Shape();
+    tearShape.moveTo(-0.14, 0);
+    tearShape.lineTo(0.07, 0.18);
+    tearShape.lineTo(0.015, 0.04);
+    tearShape.lineTo(0.13, 0.08);
+    tearShape.lineTo(-0.08, -0.18);
+    tearShape.lineTo(-0.04, -0.03);
+    tearShape.closePath();
+    const tearGeometry = new THREE.ShapeGeometry(tearShape);
+    for (let face = 0; face < 4; face++) {
+      const angle = face * Math.PI / 2;
+      mesh(tears, tearGeometry, color.sky, Math.sin(angle) * 0.625, 0.48,
+        Math.cos(angle) * 0.625, true).rotation.y = angle;
+    }
+    const gauge = new THREE.Group();
+    gauge.position.y = 4.2;
+    group.add(gauge);
+    const rail = mesh(gauge, new THREE.PlaneGeometry(1.65, 0.22), color.sky, 0, 0, 0, true);
+    const fill = mesh(gauge, new THREE.PlaneGeometry(1.55, 0.13), color.gold, 0, 0, 0.025, true);
     const halo = ring(group, 0, 0.04, 0, tuning.safe_radius, color.gold);
     if (!materialCache.has('litLamp')) materialCache.set('litLamp', new THREE.MeshLambertMaterial({
       color: color.lamp, emissive: color.lamp, emissiveIntensity: 0.34
     }));
-    lamps.set(lamp.id, { body, off: body.material, core, halo });
+    lamps.set(lamp.id, { housing, body, off: body.material, core, tears, gauge, rail, fill, halo });
   }
   for (const charm of game.charms) {
     const group = new THREE.Group();
@@ -253,9 +278,9 @@ function menu() {
   ]);
 }
 const messages = [
-  'Mây à, hãy theo những đốm sáng. Mỗi ngọn đèn thắp lên sẽ giữ Bóng Mực ở ngoài.',
-  'Cầu tre nối hai bờ. Hãy thử những bậc nhảy nếu con muốn sang đảo bên kia.',
-  'Theo đường dốc lên tầng cao, rồi lấy đà từ bậc nhảy để tới tháp chuông.'
+  'Mây à, hãy giữ ít nhất ba đèn sáng tới bình minh. Đèn yếu cần châm dầu để xua Bóng Mực.',
+  'Cầu tre nối hai bờ. Hãy thử những bục nhảy nếu con muốn sang đảo bên kia.',
+  'Theo đường dốc lên tầng cao, rồi lấy đà từ bục nhảy để tới tháp chuông.'
 ];
 function intro(night) {
   setupNight(night);
@@ -287,6 +312,19 @@ for (const key of ['volume', 'sensitivity']) {
     saveSettings();
   });
 }
+function applyPalette() {
+  document.body.classList.toggle('clear-palette', settings.clearPalette);
+  lastHud = '';
+}
+const paletteInput = $('clear-palette');
+paletteInput.checked = settings.clearPalette;
+paletteInput.addEventListener('change', () => {
+  settings.clearPalette = paletteInput.checked;
+  saveSettings();
+  applyPalette();
+});
+applyPalette();
+
 function result(event) {
   const won = game.state === 'won';
   const night = game.night;
@@ -298,7 +336,7 @@ function result(event) {
     ], 'Đã hoàn thành ba đêm');
     return;
   }
-  const reasons = { all_lit: 'Tất cả Đèn Lồng Lớn đã sáng.', dawn: 'Bình minh đã đến.', no_flames: 'Mây đã hết Ngọn Lửa.' };
+  const reasons = { dawn_survived: 'Đủ đèn sáng khi bình minh đến.', dawn: 'Bình minh đến khi đảo chưa đủ đèn sáng.', no_flames: 'Mây đã hết Ngọn Lửa.' };
   overlay('result', won ? 'Đảo đã bừng sáng' : 'Đêm kết thúc',
     reasons[event.data.reason] + ' Điểm đêm này: ' + game.score + (won ? '. Tổng điểm: ' + clearedScore : '') + '.',
     [[won ? 'Đêm kế tiếp' : 'Chơi lại Đêm', () => intro(won ? night + 1 : night)], ['Về menu', menu]],
@@ -332,7 +370,7 @@ renderer.domElement.addEventListener('pointerdown', event => {
   renderer.domElement.requestPointerLock();
 });
 document.addEventListener('pointerlockchange', () => {
-  mouseLocked = !!document.pointerLockElement;
+  mouseLocked = document.pointerLockElement === renderer.domElement;
 });
 renderer.domElement.addEventListener('pointermove', event => {
   if (mouseLocked && view === 'playing') {
@@ -382,6 +420,9 @@ const shadeGroup = () => {
   orb(group, color.shade, 0, 0.055, 0.04, 0.78, true);
   const stunned = orb(group, color.stunned, 0, 0, 0.02, 0.85, true);
   stunned.visible = false;
+  const eyes = new THREE.Group();
+  for (const x of [-0.21, 0.21]) orb(eyes, color.edge, x, 0.13, 0.72, 0.105, true);
+  group.add(eyes);
   world.add(group);
   return group;
 };
@@ -404,7 +445,13 @@ function nightEntities(tick) {
   moteCore.instanceMatrix.needsUpdate = true;
   syncEntities(game.shades, shades, shadeGroup, (mesh, shade) => {
     mesh.position.set(shade.pos[0], shade.pos[1] + Math.sin(tick / 14) * 0.1, shade.pos[2]);
-    mesh.rotation.y = tick * 0.024;
+    mesh.rotation.y = Math.atan2(game.player.pos[0] - shade.pos[0], game.player.pos[2] - shade.pos[2]);
+    const tint = settings.clearPalette ? '#00b3ff' : color.edge;
+    const key = tint + true;
+    if (!materialCache.has(key)) materialCache.set(key, new THREE.MeshBasicMaterial({ color: tint }));
+    const material = materialCache.get(key);
+    mesh.children[0].material = material;
+    for (const eye of mesh.children[3].children) eye.material = material;
     mesh.children[2].visible = shade.state === 'stunned';
     mesh.scale.setScalar(shade.state === 'spawning' ? 0.7 : 1);
   });
@@ -428,23 +475,30 @@ function updateHud(lit, tick) {
   const { player } = game;
   const seconds = timeLeft(game);
   const near = targetLantern(game, true);
+  const capacity = capacityFor(game.successfulLights);
+  const fuel = near?.lit ? Math.round(near.fuelTicks / hz) : null;
   const dash = tick < game.charmUntil ? 0 : Math.max(0, game.dashReady - tick);
   const pulse = Math.max(0, game.pulseReady - tick);
   const values = [player.flames, player.carried, lit, displayTime(seconds), game.score,
-    Math.ceil(dash / 6), Math.ceil(pulse / 6), near?.deposited ?? -1];
+    Math.ceil(dash / 6), Math.ceil(pulse / 6), near?.id, near?.deposited, fuel, capacity];
   if (lastHud !== values.join('/')) {
     lastHud = values.join('/');
     $('island').textContent = 'Đêm ' + game.night + ' · ' + game.map.name;
     $('flames').textContent = 'Lửa ' + player.flames + '/3';
-    $('clock').textContent = displayTime(seconds);
+    $('clock').textContent = (settings.clearPalette && seconds <= 30 ? '⚠ ' : '') + displayTime(seconds);
     $('clock').classList.toggle('danger', seconds <= 30);
-    $('lanterns').textContent = 'Đèn ' + lit + '/' + game.lanterns.length;
+    $('lanterns').textContent = 'Đèn ' + lit + '/' + game.lanterns.length + ' · Cần ' + requiredLights(game);
     $('score').textContent = 'Điểm ' + game.score;
-    $('slots').setAttribute('aria-label', 'Đom đóm ' + player.carried + '/10');
-    slots.forEach((slot, i) => slot.classList.toggle('on', i < player.carried));
+    $('carry').textContent = player.carried + '/' + capacity;
+    $('slots').setAttribute('aria-label', 'Đom đóm ' + player.carried + '/' + capacity);
+    slots.forEach((slot, i) => {
+      slot.hidden = i >= capacity;
+      slot.classList.toggle('on', i < player.carried);
+    });
     const timer = value => value ? (Math.ceil(value / 6) / 10).toFixed(1) + ' s' : '✓';
     $('cooldowns').innerHTML = '<span>⇥ Lướt <b>' + timer(dash) + '</b></span><span>✦ Tỏa sáng <b>' + timer(pulse) + '</b></span>';
-    $('hint').textContent = near ? 'E — Nạp ánh sáng (' + near.deposited + '/10)' : '';
+    $('hint').textContent = !near ? '' : near.lit ? 'E — Châm dầu (' + fuel + '/100)'
+      : 'E — ' + (near.ever_lit ? 'Thắp lại' : 'Nạp ánh sáng') + ' (' + near.deposited + '/' + lanternCost(near) + ')';
   }
   const target = targetLantern(game);
   const arrow = $('arrow');
@@ -490,9 +544,19 @@ function render() {
   const walking = player.grounded && Math.hypot(player.vel[0], player.vel[2]) > 0;
   feet.forEach((foot, i) => { foot.rotation.x = walking ? Math.sin(tick * 0.29) * (i ? 0.45 : -0.45) : 0; });
   for (const lamp of game.lanterns) {
-    const { body, off, core, halo } = lamps.get(lamp.id);
-    body.material = lamp.lit ? materialCache.get('litLamp') : off;
-    core.visible = halo.visible = lamp.lit;
+    const { housing, body, off, core, tears, gauge, rail, fill, halo } = lamps.get(lamp.id);
+    const flashOn = isSafeLantern(lamp) || tick % hz < hz / 2;
+    const fuel = lamp.fuelTicks / (hz * tuning.fuel_max);
+    housing.scale.setScalar(lamp.lit ? 1 : 0.8);
+    body.material = lamp.lit && flashOn ? materialCache.get('litLamp') : off;
+    core.visible = lamp.lit && flashOn;
+    tears.visible = !lamp.lit;
+    gauge.visible = lamp.lit && flashOn;
+    gauge.quaternion.copy(camera.quaternion);
+    rail.visible = gauge.visible;
+    fill.scale.x = fuel;
+    fill.position.x = (fuel - 1) * 1.55 / 2;
+    halo.visible = isSafeLantern(lamp);
   }
   nightEntities(tick);
   const pulseAge = tick - pulseTick;
@@ -522,6 +586,3 @@ renderer.setAnimationLoop(now => {
   audio.update();
   render();
 });
-
-
-

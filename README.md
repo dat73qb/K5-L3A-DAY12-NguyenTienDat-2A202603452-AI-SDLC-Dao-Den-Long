@@ -7,6 +7,10 @@
 
 ## Chạy game (Phase 1)
 
+## Phase 3 — Đèn cạn dầu
+
+Từ Phase 3, đèn có nhiên liệu và tự hao dầu. Người chơi phải châm dầu, bảo vệ các đèn yếu khỏi Bóng Mực hút dầu và giữ ít nhất 60% số đèn sáng đến bình minh. Xem [CHANGELOG.md](CHANGELOG.md) và [PHASE3_NOTES.md](docs/notes/PHASE3_NOTES.md).
+
 ### 1. Cài đặt và chạy (tối đa 3 lệnh)
 
 ```powershell
