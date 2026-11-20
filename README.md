@@ -5,6 +5,57 @@
 
 ---
 
+## Chạy game (Phase 1)
+
+### 1. Cài đặt và chạy (tối đa 3 lệnh)
+
+```powershell
+# 1. Cài dependencies
+npm install
+
+# 2. Chạy dev server (mở trình duyệt tự động)
+npm run dev
+
+# 3. Chạy test contract (tùy chọn, kiểm chứng headless)
+npm test
+```
+
+- Dev server: http://localhost:5173/
+- Build sản xuất: `npm run build` (ra thư mục `dist`)
+- Chế độ headless: `npm run headless` (xem `game.contract.json`)
+
+### 2. Điều khiển
+
+| Phím | Hành động |
+|---|---|
+| **W** | Đi về phía trước |
+| **A** | Đi sang **phải** |
+| **S** | Đi về phía sau |
+| **D** | Đi sang **trái** |
+| **Space** | Nhảy (cao hơn, có thể bay qua bóng mực mà không bị damage) |
+| **← →** | Xoay góc nhìn (bàn phím) |
+| **Chuột** | Nhấp chuột trái để khóa con trỏ, di chuột để xoay camera (chuột trái → camera phải, chuột phải → camera trái). Nhấn **Esc** để thoát. |
+| **E** | Nạp đèn (khi đứng gần đèn tắt) |
+| **Q** | Tắt sáng / pulse (đét bóng mực trong bán kính) |
+
+Mục tiêu: Thắp tất cả 5 đèn trước khi hết đèn 3 mạng hoặc đến bình minh.
+
+### 3. Cách tính điểm
+
+| Hành động | Điểm |
+|---|---|
+| Gom 1 đom đóm (mote) | +10 |
+| Thắp 1 đèn (lantern) | +100 |
+| Đét 1 bóng mực (pulse stun) | +25 |
+| Mỗi giây còn lại khi thắng | +2 |
+| Mỗi mạng lửa còn lại khi thắng | +50 |
+
+**Điểm thắng** = 10 × (số mote gom) + 100 × (số đèn thắp) + 25 × (số bóng mực đét) + 2 × (giây còn lại) + 50 × (lửa còn lại).
+
+Nếu thua do hết lửa hoặc đến bình minh: không có điểm thưởng thời gian và lửa.
+
+---
+
 ## Tài liệu của lab
 
 | File | Nội dung |
