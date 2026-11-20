@@ -1,0 +1,12 @@
+{
+  "contract_version": "1.3",
+  "avg_fps": 716.6001080050598,
+  "p1_low_fps": 194.76401847993483,
+  "frame_ms_p95": 2.2999999999992724,
+  "frames": 21497,
+  "load_ms": 1226,
+  "peak_mem_mb": null,
+  "vsync_off": true,
+  "renderer": "Three.js r183 / WebGL2 / ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL ES 3.2)",
+  "os": "Linux 7.0.0-44-generic x64"
+}

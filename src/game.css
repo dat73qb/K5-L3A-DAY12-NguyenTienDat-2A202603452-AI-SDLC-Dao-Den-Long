@@ -1,6 +1,6 @@
 * { box-sizing: border-box }
 [hidden] { display: none !important }
-body { margin: 0; color: #f5f1e6; background: #0e1430; font: 16px 'Noto Sans', 'Noto Sans Vietnamese', system-ui, sans-serif; overflow: hidden }
+body { margin: 0; color: #f5f1e6; background: #0e1430; font: 16px system-ui, sans-serif; overflow: hidden }
 canvas { display: block; touch-action: none; cursor: grab }
 canvas:active { cursor: grabbing }
 #hud { position: absolute; inset: 0; pointer-events: none }
@@ -9,7 +9,7 @@ canvas:active { cursor: grabbing }
 .panel span { display: block; font-size: .8rem }
 .panel strong { display: block; color: #f2c14e; margin-top: .2rem }
 .align-right { text-align: right; justify-self: end }
-#clock { font: 700 clamp(1.2rem, 4vw, 2rem) 'Noto Sans', 'Noto Sans Vietnamese', ui-monospace, monospace; font-variant-numeric: tabular-nums }
+#clock { font: 700 clamp(1.2rem, 4vw, 2rem) ui-monospace, monospace; font-variant-numeric: tabular-nums }
 #clock.danger { color: #ff5a5f; animation: danger 1s infinite }
 .clear-palette #clock.danger { color: #fff }
 #settings .palette-option { display: flex; gap: .55rem; align-items: center }
@@ -31,7 +31,7 @@ canvas:active { cursor: grabbing }
 #cooldowns b { color: #f2c14e }
 dialog { color: inherit; background: #0e1430f7; border: 1px solid #f2c14e9c; border-radius: 1rem; width: min(36rem, calc(100vw - 2rem)); padding: clamp(1.25rem, 5vw, 2.8rem); text-align: center }
 dialog::backdrop { background: #0e1430a8 }
-h1 { margin: 0; color: #ffe9b0; font: clamp(2rem, 7vw, 3.6rem) 'Noto Sans', 'Noto Sans Vietnamese', Georgia, serif }
+h1 { margin: 0; color: #ffe9b0; font: clamp(2rem, 7vw, 3.6rem) Georgia, serif }
 #screen-kicker { color: #f2c14e; margin: 0 0 .5rem; letter-spacing: .12em; font-size: .8rem; text-transform: uppercase }
 #screen-message { line-height: 1.55; margin: 1.25rem 0 }
 #screen-message:empty { display: none }
@@ -47,3 +47,37 @@ button:focus-visible, input:focus-visible { outline: 2px solid #fff6c2; outline-
   #cooldowns { grid-column: 1 / -1; grid-row: 3; justify-self: center }
   .panel { padding: .4rem .5rem }
 }
+
+#screen[data-view="menu"] {
+  border-top: 3px solid #ffb347;
+  background: radial-gradient(ellipse at top, #3b2c36, #0e1430 72%);
+}
+#screen[data-view="menu"] #screen-message { max-width: 27rem; margin-inline: auto }
+#fuel-board { display: grid; grid-template-columns: repeat(2, 1fr); gap: .35rem; margin-top: .6rem }
+#fuel-board > div { padding: .3rem .4rem; border: 1px solid #f2c14e42; border-radius: .3rem; min-width: 3.25rem; text-align: left }
+#fuel-board span { font-size: .7rem; white-space: nowrap }
+#fuel-board meter { display: block; margin-top: .12rem; width: 100%; height: .42rem; accent-color: #ffb347 }
+#fuel-board meter::-webkit-meter-optimum-value { background: #ffb347 }
+#fuel-board [data-state="weak"] { border-color: #ff5a5f; color: #ff5a5f }
+.clear-palette #fuel-board [data-state="weak"] { border-color: #fff; color: #fff }
+
+:root { font-size: 18px }
+body { font-size: 1rem }
+:root.large-text { font-size: 22.5px }
+.panel span, #fuel-board span, #carry, #screen-kicker, .controls, #bindings button { font-size: 1em }
+#carry { font-family: ui-monospace, monospace }
+#screen { max-height: calc(100dvh - 2rem); overflow: auto }
+#settings { margin-top: 1rem }
+#bindings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35em }
+#bindings button { background: #0e1430; color: #f5f1e6; text-align: left; padding: .4em .5em }
+#binding-status, #score-status { margin: .25em 0; min-height: 1.4em }
+#save-score { margin: 1em 0 }
+#save-score label { display: block; margin-bottom: .4em }
+#score-name { font: inherit; max-width: 12em; padding: .55em; border-radius: .35em }
+#leaderboard { text-align: left; line-height: 1.6 }
+#shade-cue { position: absolute; z-index: 1; left: clamp(5rem, var(--cue-x, 87%), calc(100% - 5rem)); top: 46%; transform: translate(-50%, -50%); text-align: center; max-width: 11em }
+#shade-direction { display: block; font-size: 1.35em; color: #f2c14e }
+#clock.final-countdown { outline: 2px solid currentColor }
+#clock.final-countdown::after { content: "10 giây cuối"; display: block; text-align: center; font: 700 1rem system-ui }
+.reduced-motion #clock.danger { animation: none }
+@media (prefers-reduced-motion: reduce) { #clock.danger { animation: none } }

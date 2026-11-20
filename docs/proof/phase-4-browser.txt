@@ -1,0 +1,7 @@
+Normal Đảo Bến, 4s mean FPS: 59.75 {"renderer":"ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL ES 3.2)","viewport":[1280,720],"buffer":[1280,720]}
+Menu, night intro, frozen pause clock, settings persistence, and keyboard resume passed.
+HUD dash cooldown, warning clock, background, dash, countdown and loss audio tones passed.
+Normal Đảo Cau, 4s mean FPS: 60.00 {"renderer":"ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL ES 3.2)","viewport":[1280,720],"buffer":[1280,720]}
+Normal Đảo Chuông, 4s mean FPS: 60.00 {"renderer":"ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL ES 3.2)","viewport":[1280,720],"buffer":[1280,720]}
+Rebinding, duplicate detection, reset, reduced motion, large text and saved leaderboard passed.
+Fixture replay, three-night progression via E, capacity increase, delayed dawn victory, total score, color palette persistence and return to menu passed.

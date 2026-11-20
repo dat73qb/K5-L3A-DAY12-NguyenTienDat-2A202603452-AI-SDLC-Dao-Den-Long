@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Đảo Đèn Lồng</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Vietnamese:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/game.css">
 </head>
 <body>
@@ -14,9 +11,10 @@
     <div class="top">
       <div class="panel"><span id="island"></span><strong id="flames"></strong></div>
       <div id="clock" class="panel">05:00</div>
-      <div class="panel align-right"><span id="lanterns"></span><strong id="score"></strong></div>
+      <div class="panel align-right"><span id="lanterns"></span><strong id="score"></strong><div id="fuel-board" aria-label="Dầu từng đèn"></div></div>
     </div>
     <div id="arrow" class="panel" hidden><b id="arrow-icon">↑</b> <span id="arrow-name"></span></div>
+    <div id="shade-cue" class="panel" hidden><b id="shade-direction">↑</b> Bóng Mực xuất hiện</div>
     <p id="wind" class="panel" hidden></p>
     <div class="bottom">
       <div id="hint"></div>
@@ -34,9 +32,21 @@
       <label for="sensitivity">Độ nhạy chuột <output id="sensitivity-value"></output></label>
       <input id="sensitivity" type="range" min="10" max="100">
       <label class="palette-option"><input id="clear-palette" type="checkbox"> Bảng màu dễ phân biệt</label>
+      <label class="palette-option"><input id="reduced-motion" type="checkbox"> Giảm chuyển động</label>
+      <label class="palette-option"><input id="large-text" type="checkbox"> Chữ lớn</label>
+      <div id="bindings" aria-label="Đổi phím điều khiển"></div>
+      <button id="reset-bindings" type="button">Khôi phục mặc định</button>
+      <p id="binding-status" role="status"></p>
     </div>
+    <form id="save-score" hidden>
+      <label for="score-name">Tên trên bảng xếp hạng</label>
+      <input id="score-name" name="name" required minlength="3" maxlength="12" pattern="[A-Za-z0-9_]{3,12}" placeholder="3–12 chữ, số hoặc _">
+      <button type="submit">Lưu điểm</button>
+      <p id="score-status" role="status"></p>
+    </form>
+    <ol id="leaderboard" hidden></ol>
     <div id="actions"></div>
-    <p class="controls">WASD đi · Space nhảy · Shift lướt · E nạp đèn · Q tỏa sáng · Esc/P tạm dừng · Kéo chuột để xoay</p>
+    <p id="controls-summary" class="controls"></p>
   </dialog>
   <script type="module" src="/src/browser.mjs"></script>
 </body>

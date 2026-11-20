@@ -7,6 +7,24 @@
 
 ## Chạy game (Phase 1)
 
+## Phase 4 — Phát hành v1.0.0
+
+Phase 4 bổ sung benchmark, soak test, bảng xếp hạng cục bộ và các tùy chọn accessibility.
+
+### Kiểm chứng phát hành
+
+```powershell
+npm test
+npm run build
+npm run bench -- --seed 42 --duration 30 --out bench.json
+npm run soak -- --seed 7 --nights 10 --out soak.json
+```
+
+- Benchmark cố định ở 1280×720, yêu cầu `avg_fps >= 60`, `p1_low_fps >= 30`, `load_ms <= 10000`.
+- Soak test chạy 10 đêm, yêu cầu không crash và RSS cuối không vượt 1.2 lần RSS đầu.
+- Xuất bảng xếp hạng: `npm run start -- --export-leaderboard leaderboard.json`.
+- Release artifact nằm trong `docs/release/dao-den-long-v1.0.0.zip`.
+
 ## Phase 3 — Đèn cạn dầu
 
 Từ Phase 3, đèn có nhiên liệu và tự hao dầu. Người chơi phải châm dầu, bảo vệ các đèn yếu khỏi Bóng Mực hút dầu và giữ ít nhất 60% số đèn sáng đến bình minh. Xem [CHANGELOG.md](CHANGELOG.md) và [PHASE3_NOTES.md](docs/notes/PHASE3_NOTES.md).

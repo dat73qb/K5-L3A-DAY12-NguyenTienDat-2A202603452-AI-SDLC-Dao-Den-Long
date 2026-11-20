@@ -25,7 +25,7 @@ const add = (pos, dir, length) => [pos[0] + dir[0] * length, pos[1], pos[2] + di
 const rank = (a, b) => a.id.localeCompare(b.id, 'en', { numeric: true });
 const left = (until, tick) => Math.max(0, until - tick);
 
-function randomFrom(seed) {
+export function randomFrom(seed) {
   let value = seed >>> 0;
   return () => {
     value = (Math.imul(1664525, value) + 1013904223) >>> 0;
@@ -409,7 +409,7 @@ function updateSafe(game, safe) {
   }
 }
 
-function updateShades(game, safe) {
+function updateShades(game, safe, benchmark = false) {
   const { player, simTick: k } = game;
   const weakLamps = game.lanterns.filter(lamp => lamp.lit && !isSafeLantern(lamp));
   const darkLamps = game.lanterns.filter(lamp => !lamp.lit);
@@ -428,7 +428,7 @@ function updateShades(game, safe) {
       if (range > 6) continue;
       stopDrain(shade, 'chase');
     }
-    if (range <= 12) shade.state = 'chase';
+    if (!benchmark && range <= 12) shade.state = 'chase';
     if (range > 18) shade.state = 'wander';
     const speed = (game.night === 3 ? 4.5 : t.shade_speed) * dt;
     if (shade.state === 'chase') {
@@ -520,6 +520,28 @@ function spawn(game, emit) {
     game.drifters.push({ id, pos: [pos[0], 0.8, pos[2]], state: 'idle', stolen: 0, until: 0, heading: [1, 0] });
     game.drifters.sort(rank);
   }
+}
+
+export function benchmarkGame(seed) {
+  const random = randomFrom(seed);
+  const points = (count, height) => Array.from({ length: count }, (_, index) => {
+    const angle = (index + random()) * Math.PI * 2 / count;
+    const radius = 39 * Math.sqrt(random());
+    return [Math.cos(angle) * radius, height, Math.sin(angle) * radius];
+  });
+  return createGame(seed, {
+    random_motes: false, random_shades: false, random_drifters: false,
+    motes: points(100, 0), shades: points(200, 0.8).map(pos => ({ pos, state: 'wander' })),
+    lanterns: ['L1', 'L2', 'L3'].map(id => ({ id, lit: true }))
+  });
+}
+
+export function benchmarkTick(game) {
+  game.tick++;
+  game.simTick++;
+  const safe = game.lanterns.filter(isSafeLantern);
+  updateSafe(game, safe);
+  updateShades(game, safe, true);
 }
 
 export function step(game, input = defaultInput, record = () => {}, feedback = () => {}) {

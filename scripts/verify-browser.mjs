@@ -88,7 +88,14 @@ try {
   await send('Runtime.enable');
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
   await waitTitle('Đảo Đèn Lồng');
+  assert.equal(await evaluate("document.querySelector('#screen-kicker').textContent"), 'Đèn cạn dầu');
   await click('Cài đặt');
+  await evaluate("document.querySelector('[data-action=interact]').click()");
+  await key('KeyQ', 'q', 81);
+  assert.match(await evaluate("document.querySelector('#binding-status').textContent"), /Phím đã dùng/);
+  await key('KeyF', 'f', 70);
+  assert.match(await evaluate("document.querySelector('[data-action=interact]').textContent"), / · F$/);
+  await evaluate("document.querySelector('#reduced-motion').click(); document.querySelector('#large-text').click()");
   await evaluate(`for (const [id, value] of [['volume', '0'], ['sensitivity', '72']]) {
     const input = document.getElementById(id);
     input.value = value;
@@ -104,6 +111,11 @@ try {
   await click('Cài đặt');
   assert.deepEqual(await evaluate("['volume','sensitivity'].map(id => document.getElementById(id).value)"), ['0', '72']);
   assert.equal(await evaluate("document.getElementById('clear-palette').checked && document.body.classList.contains('clear-palette')"), true);
+  assert.match(await evaluate("document.querySelector('[data-action=interact]').textContent"), / · F$/);
+  assert.equal(await evaluate("getComputedStyle(document.body).fontSize"), '22.5px');
+  assert.equal(await evaluate("document.body.classList.contains('reduced-motion')"), true);
+  await click('Khôi phục mặc định');
+  assert.match(await evaluate("document.querySelector('[data-action=interact]').textContent"), / · E$/);
   await click('Quay lại');
   await evaluate(`{
     const start = OscillatorNode.prototype.start;
@@ -140,7 +152,7 @@ try {
     assert.ok(fps >= 30, 'Expected at least 30 FPS');
   }
   await verifyFps('Đảo Bến');
-  await screenshot('phase-3-game.png');
+  await screenshot('phase-4-game.png');
   assert.ok(await evaluate("playedFrequencies.includes(196)"));
   await key('ShiftLeft', 'Shift', 16);
   await until(() => evaluate("/Lướt\\s+[0-9]/.test(document.querySelector('#cooldowns').textContent)"));
@@ -172,8 +184,12 @@ try {
   await until(() => evaluate("document.querySelector('#clock').classList.contains('danger')"));
   assert.equal(await evaluate("getComputedStyle(document.querySelector('#clock')).color"), 'rgb(255, 255, 255)');
   assert.match(await evaluate("document.querySelector('#clock').textContent"), /^⚠/);
-  await screenshot('phase-3-low-fuel.png');
+  assert.match(await evaluate("document.querySelector('#fuel-board [data-state=weak]').textContent"), /^L1 · ⚠/);
+  assert.equal(await evaluate("document.querySelectorAll('#fuel-board [data-state=off]').length"), 4);
+  await screenshot('phase-4-low-fuel.png');
   await waitTitle('Đêm kết thúc');
+  await evaluate("document.querySelector('#score-name').value='Demo_7'; document.querySelector('#save-score').requestSubmit()");
+  await until(() => evaluate("document.querySelector('#score-status').textContent === 'Đã lưu điểm.'"));
   assert.ok(await evaluate("playedFrequencies.includes(550) && playedFrequencies.includes(370)"));
   console.log('HUD dash cooldown, warning clock, background, dash, countdown and loss audio tones passed.');
   fixture = 'win';
@@ -200,11 +216,14 @@ try {
   }
   const summary = await evaluate("document.querySelector('#screen-message').textContent");
   assert.equal(summary, 'Ba hòn đảo đã sáng. Tổng điểm: 3564.');
-  await screenshot('phase-3-dawn.png');
+  await screenshot('phase-4-dawn.png');
   await send('Debugger.removeBreakpoint', { breakpointId: breakpoint });
   await click('Về menu');
   await waitTitle('Đảo Đèn Lồng');
+  await click('Bảng xếp hạng');
+  await until(() => evaluate("document.querySelector('#leaderboard li')?.textContent.includes('Demo_7')"));
   assert.deepEqual(errors, []);
+  console.log('Rebinding, duplicate detection, reset, reduced motion, large text and saved leaderboard passed.');
   console.log('Fixture replay, three-night progression via E, capacity increase, delayed dawn victory, total score, color palette persistence and return to menu passed.');
 } finally {
   ws?.close();

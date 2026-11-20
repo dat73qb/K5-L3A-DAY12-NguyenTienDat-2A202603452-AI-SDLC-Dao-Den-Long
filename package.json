@@ -1,13 +1,16 @@
 {
   "name": "dao-den-long",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --open",
     "build": "vite build",
     "test": "node --test",
-    "headless": "node src/headless.mjs"
+    "headless": "node src/headless.mjs",
+    "start": "node scripts/run.mjs",
+    "bench": "node scripts/bench.mjs",
+    "soak": "node --jitless --expose-gc --max-semi-space-size=1 scripts/soak.mjs"
   },
   "dependencies": {
     "three": "0.183.2"

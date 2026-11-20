@@ -1,0 +1,193 @@
+v22.22.1
+
+added 15 packages, and audited 16 packages in 2s
+
+5 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> dao-den-long@1.0.0 build
+> vite build
+
+vite v7.3.8 building client environment for production...
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   2.76 kB │ gzip:   1.18 kB
+dist/assets/index-BLGHHbqI.css    5.17 kB │ gzip:   1.93 kB
+dist/assets/index-BqW0dJ5h.js   575.37 kB │ gzip: 152.56 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.08s
+
+> dao-den-long@1.0.0 test
+> node --test
+
+TAP version 13
+# Subtest: tick zero, yaw, diagonal normalization, partial frames, grounded jump and fixed clock
+ok 1 - tick zero, yaw, diagonal normalization, partial frames, grounded jump and fixed clock
+  ---
+  duration_ms: 729.753036
+  type: 'test'
+  ...
+# Subtest: pickup height, capacity, deposit at XZ boundary, rising edge and no early win
+ok 2 - pickup height, capacity, deposit at XZ boundary, rising edge and no early win
+  ---
+  duration_ms: 592.624892
+  type: 'test'
+  ...
+# Subtest: pulse uses 3D range, moves four metres over 15 ticks, and applies cooldown
+ok 3 - pulse uses 3D range, moves four metres over 15 ticks, and applies cooldown
+  ---
+  duration_ms: 328.722282
+  type: 'test'
+  ...
+# Subtest: hit order, recoil, invulnerability, drops and safe zone push
+ok 4 - hit order, recoil, invulnerability, drops and safe zone push
+  ---
+  duration_ms: 727.90506
+  type: 'test'
+  ...
+# Subtest: fall ignores invulnerability; respawn waits 60 ticks and resets movement
+ok 5 - fall ignores invulnerability; respawn waits 60 ticks and resets movement
+  ---
+  duration_ms: 967.009911
+  type: 'test'
+  ...
+# Subtest: pause freezes simulation, clock, pickups and cooldowns across wall ticks
+ok 6 - pause freezes simulation, clock, pickups and cooldowns across wall ticks
+  ---
+  duration_ms: 425.315426
+  type: 'test'
+  ...
+# Subtest: dash lasts 12 ticks, airborne elevation is held, and charm skips cooldown only
+ok 7 - dash lasts 12 ticks, airborne elevation is held, and charm skips cooldown only
+  ---
+  duration_ms: 551.621448
+  type: 'test'
+  ...
+# Subtest: standard spawn positions, renewable motes and spawn schedule
+ok 8 - standard spawn positions, renewable motes and spawn schedule
+  ---
+  duration_ms: 317.12392
+  type: 'test'
+  ...
+# Subtest: Night 2 bridge charm and pad; Night 3 terrace pad
+ok 9 - Night 2 bridge charm and pad; Night 3 terrace pad
+  ---
+  duration_ms: 878.074169
+  type: 'test'
+  ...
+# Subtest: Gió Lạc attacks before shade, bypasses immunity and drops stolen motes on pulse
+ok 10 - Gió Lạc attacks before shade, bypasses immunity and drops stolen motes on pulse
+  ---
+  duration_ms: 880.291473
+  type: 'test'
+  ...
+# Subtest: wind starts at tick 1800, adds 2 m/s, then stops; charms respawn
+ok 11 - wind starts at tick 1800, adds 2 m/s, then stops; charms respawn
+  ---
+  duration_ms: 751.325462
+  type: 'test'
+  ...
+# Subtest: seeded output byte match and invalid inputs exit 2
+ok 12 - seeded output byte match and invalid inputs exit 2
+  ---
+  duration_ms: 1467.553582
+  type: 'test'
+  ...
+# Subtest: Night 3 walls block ascent, ramps climb, and the origin stays on level zero
+ok 13 - Night 3 walls block ascent, ramps climb, and the origin stays on level zero
+  ---
+  duration_ms: 888.60044
+  type: 'test'
+  ...
+# Subtest: drifter schedule fills two active slots and no drifter is scheduled in Night 1
+ok 14 - drifter schedule fills two active slots and no drifter is scheduled in Night 1
+  ---
+  duration_ms: 706.960647
+  type: 'test'
+  ...
+# Subtest: finish at dawn after the final input and award fuel rather than remaining time
+ok 15 - finish at dawn after the final input and award fuel rather than remaining time
+  ---
+  duration_ms: 302.339915
+  type: 'test'
+  ...
+# Subtest: fuel defaults to 100, decays exactly at 60 Hz, freezes on pause and expires
+ok 16 - fuel defaults to 100, decays exactly at 60 Hz, freezes on pause and expires
+  ---
+  duration_ms: 287.501222
+  type: 'test'
+  ...
+# Subtest: refuel caps fuel, consumes ceiling-based amount, chooses lowest ID at a tie and scores five per mote
+ok 17 - refuel caps fuel, consumes ceiling-based amount, chooses lowest ID at a tie and scores five per mote
+  ---
+  duration_ms: 590.745408
+  type: 'test'
+  ...
+# Subtest: extinction precedes interaction, relight costs five and grows capacity up to 20
+ok 18 - extinction precedes interaction, relight costs five and grows capacity up to 20
+  ---
+  duration_ms: 612.975181
+  type: 'test'
+  ...
+# Subtest: wander selects nearest weak lantern, ties by ID, and two drainers accumulate without crossing targets
+ok 19 - wander selects nearest weak lantern, ties by ID, and two drainers accumulate without crossing targets
+  ---
+  duration_ms: 315.887701
+  type: 'test'
+  ...
+# Subtest: drain exits to chase at six metres, stops on refuel and pulse earns drained target bonus
+ok 20 - drain exits to chase at six metres, stops on refuel and pulse earns drained target bonus
+  ---
+  duration_ms: 891.833665
+  type: 'test'
+  ...
+# Subtest: exact fuel threshold protects, lower fuel allows hits and chase keeps its target
+ok 21 - exact fuel threshold protects, lower fuel allows hits and chase keeps its target
+  ---
+  duration_ms: 551.401831
+  type: 'test'
+  ...
+# Subtest: dawn checks 3, 4 and 5 active lanterns after extinction and prioritizes zero flames
+ok 22 - dawn checks 3, 4 and 5 active lanterns after extinction and prioritizes zero flames
+  ---
+  duration_ms: 2481.999408
+  type: 'test'
+  ...
+# Subtest: benchmark has the standard population, fixed player, full fuel and no gameplay side effects
+ok 23 - benchmark has the standard population, fixed player, full fuel and no gameplay side effects
+  ---
+  duration_ms: 228.051427
+  type: 'test'
+  ...
+# Subtest: leaderboard validates entries, keeps top 10 and breaks ties by achievement instant
+ok 24 - leaderboard validates entries, keeps top 10 and breaks ties by achievement instant
+  ---
+  duration_ms: 1.959708
+  type: 'test'
+  ...
+# Subtest: key changes retain other defaults and reject duplicate stored assignments
+ok 25 - key changes retain other defaults and reject duplicate stored assignments
+  ---
+  duration_ms: 1.1868
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 16854.324014
+{"type":"end","ticks":600,"state":"playing","score":0}
+Measured benchmark and soak meet the specified thresholds.
+Extracted release runs without npm install, serves compiled JS and exports persisted leaderboard JSON.
