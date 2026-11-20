@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { once } from 'node:events';
 import { finished } from 'node:stream/promises';
 import { parseArgs } from 'node:util';
+import { maps } from './maps.mjs';
 import { createGame, defaultInput, snapshot, step, tuning } from './game.mjs';
 
 const int = value => Number.isSafeInteger(value);
@@ -30,37 +31,44 @@ function inputs(value) {
   for (const frame of value.frames) {
     requireFields(frame, {
       tick: count, move: value => vec(value, 2, n => number(n) && Math.abs(n) <= 1),
-      cam_yaw_deg: number, jump: bool, interact: bool, pulse: bool, dash: bool
+      cam_yaw_deg: number, jump: bool, interact: bool, pulse: bool, dash: bool, pause: bool
     }, 'frame');
     if (!count(frame.tick) || frame.tick <= previous) throw new Error('Frame ticks must increase strictly');
     previous = frame.tick;
   }
 }
 
-function scenario(value) {
+function uniqueEntities(list, kind, checks, required) {
+  const ids = new Set();
+  for (const entity of list ?? []) {
+    requireFields(entity, { id, ...checks }, kind);
+    if (!required(entity) || ids.has(entity.id)) throw new Error('Invalid ' + kind + ' or duplicate ID');
+    if (entity.id !== undefined) ids.add(entity.id);
+  }
+}
+
+function scenario(value, night) {
   requireFields(value, {
-    player: object, random_motes: bool, random_shades: bool,
-    motes: list => Array.isArray(list) && list.every(pos), shades: Array.isArray,
-    lanterns: Array.isArray, time_left_s: nonnegative
+    player: object, random_motes: bool, random_shades: bool, random_drifters: bool, wind_enabled: bool,
+    motes: list => Array.isArray(list) && list.every(pos), shades: Array.isArray, drifters: Array.isArray,
+    lanterns: Array.isArray, charms: Array.isArray, time_left_s: nonnegative
   }, 'scenario');
   if (value.player) requireFields(value.player, {
-    pos, carried: bounded(tuning.carry_capacity), flames: count
+    pos, carried: bounded(tuning.carry_capacity), flames: count,
+    invuln_ticks: count, dash_cd_ticks: count, pulse_cd_ticks: count, charm_ticks: count
   }, 'player');
-  const shadeIds = new Set();
-  for (const shade of value.shades ?? []) {
-    requireFields(shade, { pos, id }, 'shade');
-    if (!pos(shade.pos) || shadeIds.has(shade.id)) throw new Error('Invalid shade position or duplicate ID');
-    if (shade.id !== undefined) shadeIds.add(shade.id);
-  }
-  const lanternIds = new Set();
-  for (const lantern of value.lanterns ?? []) {
-    requireFields(lantern, {
-      pos, id: value => typeof value === 'string' && /^L[1-5]$/.test(value),
-      lit: bool, deposited: bounded(tuning.lantern_cost)
-    }, 'lantern');
-    if (!lantern.id || lanternIds.has(lantern.id)) throw new Error('Missing or duplicate lantern ID');
-    lanternIds.add(lantern.id);
-  }
+  uniqueEntities(value.shades, 'shade', {
+    pos, state: value => ['spawning', 'wander', 'chase', 'recoil', 'stunned'].includes(value), state_ticks_left: count
+  }, shade => pos(shade.pos));
+  uniqueEntities(value.drifters, 'drifter', {
+    pos, state: value => ['idle', 'chase', 'flee', 'removed'].includes(value),
+    stolen: bounded(3), state_ticks_left: count
+  }, drifter => pos(drifter.pos));
+  const ids = maps[night].lanterns.map((_, index) => 'L' + (index + 1));
+  uniqueEntities(value.lanterns, 'lantern', {
+    pos, id: value => ids.includes(value), lit: bool, deposited: bounded(tuning.lantern_cost)
+  }, lantern => Boolean(lantern.id));
+  uniqueEntities(value.charms, 'charm', { pos, available: bool, respawn_ticks: count }, () => true);
 }
 
 class InputFileError extends Error {}
@@ -92,11 +100,12 @@ async function main() {
   }
   const { values } = parseArgs({ args, options: Object.fromEntries(names.map(name => [name, { type: 'string' }])) });
   const seed = integer(values.seed, 'seed');
-  if (integer(values.night, 'night') !== 1) throw new Error('Only --night 1 is available');
+  const night = integer(values.night, 'night', 1);
+  if (!maps[night]) throw new Error('--night must be 1, 2 or 3');
   const ticks = integer(values.ticks, 'ticks', 0);
   const every = integer(values['snapshot-every'] ?? '10', 'snapshot-every', 1);
   if (!values.out) throw new Error('Missing --out');
-  const game = createGame(seed, await load(values.scenario, {}, scenario));
+  const game = createGame(seed, await load(values.scenario, {}, value => scenario(value, night)), night);
   const { frames } = await load(values.inputs, { frames: [] }, inputs);
   const output = createWriteStream(values.out);
   const completion = finished(output);
@@ -107,7 +116,8 @@ async function main() {
     const input = { ...defaultInput };
     let nextFrame = 0;
     let ready = write(snapshot(game));
-    while (game.tick < ticks && game.state === 'playing') {
+    if (ticks > 0) ready = write({ type: 'event', tick: 0, name: 'night_start', data: { night } }) && ready;
+    while (game.tick < ticks && (game.state === 'playing' || game.state === 'paused')) {
       if (!ready) await once(output, 'drain');
       ready = true;
       if (frames[nextFrame]?.tick === game.tick) Object.assign(input, frames[nextFrame++]);

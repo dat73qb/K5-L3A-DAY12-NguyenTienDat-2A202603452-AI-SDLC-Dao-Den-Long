@@ -3,35 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Đào Đèn Long</title>
-  <style>
-    * { box-sizing: border-box }
-    body { margin: 0; color: #fff3da; background: #161425; font: 16px system-ui, sans-serif; overflow: hidden }
-    canvas { display: block }
-    .top, footer { position: absolute; z-index: 1; left: 4vw; right: 4vw; pointer-events: none }
-    .top { top: 4vh; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap }
-    .title { margin: 0; font: clamp(1.5rem, 5vw, 2.8rem) Georgia, serif }
-    .night { color: #ffca86; margin: 0 0 .45rem }
-    #hud { display: flex; flex-wrap: wrap; gap: .65rem 1.25rem; height: fit-content; border: 1px solid #ffe1aa50; background: #171126df; border-radius: 14px; padding: .85rem 1.1rem }
-    footer { bottom: 4vh; display: flex; flex-direction: column; align-items: center; gap: .75rem; text-align: center }
-    #hint { min-height: 1.5em; color: #ffe0a9; font-weight: 700; text-shadow: 0 2px 5px #000 }
-    .controls { background: #171126db; border-radius: 10px; padding: .65rem 1rem; margin: 0 }
-    dialog { color: inherit; background: #21182f; border: 1px solid #ad7b57; border-radius: 18px; max-width: calc(100vw - 2rem); padding: 2rem; text-align: center }
-    dialog::backdrop { background: #11101ab0 }
-    button { background: #ffc477; color: #2e201e; font: inherit; font-weight: 700; padding: .65rem 1.2rem; border: 0; border-radius: 8px; cursor: pointer }
-    button:focus-visible { outline: 2px solid white; outline-offset: 3px }
-  </style>
+  <title>Đảo Đèn Lồng</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Vietnamese:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/game.css">
 </head>
 <body>
-  <header class="top">
-    <div><p class="night">Đêm 1 · Đào Bản</p><h1 class="title">Đào Đèn Long</h1></div>
-    <div id="hud" aria-label="Trạng thái ván chơi"></div>
-  </header>
-  <footer>
-    <div id="hint"></div>
-    <p class="controls">WASD · Di chuyển · Space · Nhảy · E · Nạp đèn · Q · Tắt sáng</p>
-  </footer>
-  <dialog id="result"><h2 id="outcome"></h2><p id="summary"></p><button id="restart">Chơi lại</button></dialog>
+  <section id="hud" aria-label="Trạng thái ván chơi" hidden>
+    <div class="top">
+      <div class="panel"><span id="island"></span><strong id="flames"></strong></div>
+      <div id="clock" class="panel">05:00</div>
+      <div class="panel align-right"><span id="lanterns"></span><strong id="score"></strong></div>
+    </div>
+    <div id="arrow" class="panel" hidden><b id="arrow-icon">↑</b> <span id="arrow-name"></span></div>
+    <p id="wind" class="panel" hidden></p>
+    <div class="bottom">
+      <div id="hint"></div>
+      <div id="slots" class="panel" aria-label="Đom đóm"></div>
+      <div id="cooldowns" class="panel"></div>
+    </div>
+  </section>
+  <dialog id="screen" aria-labelledby="screen-title">
+    <p id="screen-kicker"></p>
+    <h1 id="screen-title"></h1>
+    <p id="screen-message"></p>
+    <div id="settings" hidden>
+      <label for="volume">Âm lượng <output id="volume-value"></output></label>
+      <input id="volume" type="range" min="0" max="100">
+      <label for="sensitivity">Độ nhạy chuột <output id="sensitivity-value"></output></label>
+      <input id="sensitivity" type="range" min="10" max="100">
+    </div>
+    <div id="actions"></div>
+    <p class="controls">WASD đi · Space nhảy · Shift lướt · E nạp đèn · Q tỏa sáng</p>
+  </dialog>
   <script type="module" src="/src/browser.mjs"></script>
 </body>
 </html>
